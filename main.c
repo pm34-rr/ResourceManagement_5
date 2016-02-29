@@ -16,7 +16,7 @@
 
 #include <sys/stat.h>
 
-const int SIGNAL_NEED_START = SIGUSR1;
+const int SIGNAL_NEED_STOP = SIGUSR1;
 const int SIGNAL_ENDED		= SIGUSR2;
 
 int file;	//! file descriptor
@@ -38,10 +38,10 @@ struct ProcessInfo
  * \brief Выводит сообщение об ошибке и аварийно завершает программу.
  * \param errorString Строка для вывода.
  */
-void printError( const char * errorString )
+void printError()
 {
-	printf( "%s", errorString );
-	printf( "\n" );
+	sprintf( processInfo.message, "Error while opeping the file\n" );
+	write( fd[1], &processInfo, sizeof( processInfo ) );
 	exit( 1 );
 }
 
@@ -80,16 +80,15 @@ int main()
 			file2 = open( "log.txt", O_WRONLY | O_CREAT, 0644 );
 			if ( file != -1  ) {
 				//! reading the file
-				signal( SIGNAL_NEED_START, stopReadFile );
+				signal( SIGNAL_NEED_STOP, stopReadFile );
 
 				char c;
 				//! reading file;
 				while ( read( file, &c, sizeof( char ) ) )
 					write( file2, &c, sizeof( char ) );
-				// pause();
 			}
 			else
-				printError( "Can't read the file." );
+				printError();
 		}
 		else  {
 			//! p1
@@ -101,7 +100,7 @@ int main()
 			sleep( 3 );
 
 			//! Отправка сообщения с целью остановки чтения.
-			kill( id_p2, SIGNAL_NEED_START );
+			kill( id_p2, SIGNAL_NEED_STOP );
 
 			int errorStatus;
 			wait( &errorStatus );
