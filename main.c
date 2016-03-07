@@ -86,6 +86,8 @@ int main()
 				//! reading file;
 				while ( read( file, &c, sizeof( char ) ) )
 					write( file2, &c, sizeof( char ) );
+				sprintf( processInfo.message, "File is too small\n" );
+				write( fd[1], &processInfo, sizeof( processInfo ) );
 			}
 			else
 				printError();
@@ -104,10 +106,6 @@ int main()
 
 			int errorStatus;
 			wait( &errorStatus );
-			if ( WIFEXITED( errorStatus ) != 0 ) {
-				sprintf( processInfo.message, "File is too small\n" );
-				write( fd[1], &processInfo, sizeof( processInfo ) );
-			}
 
 			//! Запись в канал сообщения о закрытии 2-го процесса.
 			sprintf( processInfo.message, "Process 2 has been closed.\n" );
